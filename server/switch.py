@@ -10,7 +10,7 @@ import RPi.GPIO as GPIO
 
 def switchSetup():
     GPIO.setwarnings(False)
-    GPIO.setmode(GPIO.BOARD)
+    GPIO.setmode(GPIO.BCM)
     GPIO.setup(5, GPIO.OUT)
     GPIO.setup(6, GPIO.OUT)
     GPIO.setup(13, GPIO.OUT)
