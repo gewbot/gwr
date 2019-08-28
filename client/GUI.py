@@ -1,12 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: UTF-8 -*-
 # File name   : client.py
 # Description : client  
-# Website	 : www.adeept.com
-# E-mail	  : support@adeept.com
+# Website	 : www.gewbot.com
 # Author	  : William
-# Date		: 2018/08/22
-# 
+# Date		: 2019/08/28
 
 from socket import *
 import sys
@@ -84,10 +82,21 @@ def opencv_r():
 			npimg = np.frombuffer(img, dtype=np.uint8)
 			source = cv2.imdecode(npimg, 1)
 			cv2.putText(source,('PC FPS: %s'%fps),(40,20), font, 0.5,(255,255,255),1,cv2.LINE_AA)
+
+			
 			try:
 				cv2.putText(source,('CPU Temperature: %s'%CPU_TEP),(370,350), font, 0.5,(128,255,128),1,cv2.LINE_AA)
 				cv2.putText(source,('CPU Usage: %s'%CPU_USE),(370,380), font, 0.5,(128,255,128),1,cv2.LINE_AA)
 				cv2.putText(source,('RAM Usage: %s'%RAM_USE),(370,410), font, 0.5,(128,255,128),1,cv2.LINE_AA)
+
+				cv2.rectangle(source, (167, 320), (473, 330), (255,255,255))
+
+				DIR_show = int(CAR_DIR)
+				if DIR_show > 0:
+					cv2.rectangle(source, ((320-DIR_show), 323), (320, 327), (255,255,255))
+				elif DIR_show < 0:
+					cv2.rectangle(source, (320, 323), ((320-DIR_show), 327), (255,255,255))
+
 
 				#cv2.line(source,(320,240),(260,300),(255,255,255),1)
 				#cv2.line(source,(210,300),(260,300),(255,255,255),1)
@@ -95,6 +104,7 @@ def opencv_r():
 				#cv2.putText(source,('%sm'%ultra_data),(210,290), font, 0.5,(255,255,255),1,cv2.LINE_AA)
 			except:
 				pass
+			
 			#cv2.putText(source,('%sm'%ultra_data),(210,290), font, 0.5,(255,255,255),1,cv2.LINE_AA)
 			cv2.imshow("Stream", source)
 			frame_num += 1
@@ -223,7 +233,7 @@ def connection_thread():
 
 
 def Info_receive():
-	global CPU_TEP,CPU_USE,RAM_USE
+	global CPU_TEP,CPU_USE,RAM_USE,CAR_DIR
 	HOST = ''
 	INFO_PORT = 2256							#Define port serial 
 	ADDR = (HOST, INFO_PORT)
@@ -238,7 +248,7 @@ def Info_receive():
 			info_data = ''
 			info_data = str(InfoSock.recv(BUFSIZ).decode())
 			info_get = info_data.split()
-			CPU_TEP,CPU_USE,RAM_USE= info_get
+			CPU_TEP,CPU_USE,RAM_USE,CAR_DIR= info_get
 			CPU_TEP_lab.config(text='CPU Temp: %s℃'%CPU_TEP)
 			CPU_USE_lab.config(text='CPU Usage: %s'%CPU_USE)
 			RAM_lab.config(text='RAM Usage: %s'%RAM_USE)
@@ -694,12 +704,12 @@ def function_buttons(x,y):
 		else:
 			tcpClicSock.send(('function_7_off').encode())
 
-	Btn_function_1 = tk.Button(root, width=8, text='Radar',fg=color_text,bg=color_btn,relief='ridge')
-	Btn_function_2 = tk.Button(root, width=8, text='Func_2',fg=color_text,bg=color_btn,relief='ridge')
-	Btn_function_3 = tk.Button(root, width=8, text='Func_3',fg=color_text,bg=color_btn,relief='ridge')
-	Btn_function_4 = tk.Button(root, width=8, text='Func_4',fg=color_text,bg=color_btn,relief='ridge')
-	Btn_function_5 = tk.Button(root, width=8, text='Func_5',fg=color_text,bg=color_btn,relief='ridge')
-	Btn_function_6 = tk.Button(root, width=8, text='Func_6',fg=color_text,bg=color_btn,relief='ridge')
+	Btn_function_1 = tk.Button(root, width=8, text='RadarScan',fg=color_text,bg=color_btn,relief='ridge')
+	Btn_function_2 = tk.Button(root, width=8, text='FindColor',fg=color_text,bg=color_btn,relief='ridge')
+	Btn_function_3 = tk.Button(root, width=8, text='MotionGet',fg=color_text,bg=color_btn,relief='ridge')
+	Btn_function_4 = tk.Button(root, width=8, text='LineTrack',fg=color_text,bg=color_btn,relief='ridge')
+	Btn_function_5 = tk.Button(root, width=8, text='Automatic',fg=color_text,bg=color_btn,relief='ridge')
+	Btn_function_6 = tk.Button(root, width=8, text='SteadyCam',fg=color_text,bg=color_btn,relief='ridge')
 	Btn_function_7 = tk.Button(root, width=8, text='Instruction',fg=color_text,bg=color_btn,relief='ridge')
 
 	Btn_function_1.place(x=x,y=y)
@@ -721,15 +731,15 @@ def function_buttons(x,y):
 
 def loop():
 	global root
-	root = tk.Tk()			#Define a window named root
-	root.title('Adeept GUI')	  #Main window title
-	root.geometry('495x570')  #Main window size, middle of the English letter x.
-	root.config(bg=color_bg)  #Set the background color of root window
+	root = tk.Tk()			
+	root.title('GWR-R GUI')	  
+	root.geometry('495x570')  
+	root.config(bg=color_bg)  
 
 	try:
-		logo =tk.PhotoImage(file = 'logo.png')		 #Define the picture of logo,but only supports '.png' and '.gif'
-		l_logo=tk.Label(root,image = logo,bg=color_bg) #Set a label to show the logo picture
-		l_logo.place(x=30,y=13)						#Place the Label in a right position
+		logo =tk.PhotoImage(file = 'logo.png')
+		l_logo=tk.Label(root,image = logo,bg=color_bg)
+		l_logo.place(x=30,y=13)
 	except:
 		pass
 
@@ -749,7 +759,7 @@ def loop():
 
 	function_buttons(395,290)
 
-	root.mainloop()  # Run the mainloop()
+	root.mainloop()
 
 
 if __name__ == '__main__':
