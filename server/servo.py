@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 # File name   : servo.py
-# Description : Control Motor
-# Product     : RaspRover
-# Website     : www.adeept.com
-# E-mail      : support@adeept.com
+# Description : Control Servos
 # Author      : William
 # Date        : 2019/02/23
 from __future__ import division
@@ -26,13 +23,13 @@ pwm = Adafruit_PCA9685.PCA9685()
 pwm.set_pwm_freq(50)
 
 pwm0_init = 300
-pwm0_max  = 500
-pwm0_min  = 100
+pwm0_max  = 450
+pwm0_min  = 150
 pwm0_pos  = pwm0_init
 
 pwm1_init = 300
-pwm1_max  = 500
-pwm1_min  = 100
+pwm1_max  = 480
+pwm1_min  = 160
 pwm1_pos  = pwm1_init
 
 pwm2_init = 300
@@ -53,18 +50,6 @@ def radar_scan():
 	scan_result = 'U: '
 	scan_speed = 1
 	if pwm0_direction:
-		pwm0_pos = pwm0_min
-		pwm.set_pwm(0, 0, pwm0_pos)
-		time.sleep(0.5)
-		scan_result += str(ultra.checkdist())
-		scan_result += ' '
-		while pwm0_pos<pwm0_max:
-			pwm0_pos+=scan_speed
-			pwm.set_pwm(0, 0, pwm0_pos)
-			scan_result += str(ultra.checkdist())
-			scan_result += ' '
-		pwm.set_pwm(0, 0, pwm0_init)
-	else:
 		pwm0_pos = pwm0_max
 		pwm.set_pwm(0, 0, pwm0_pos)
 		time.sleep(0.5)
@@ -72,6 +57,18 @@ def radar_scan():
 		scan_result += ' '
 		while pwm0_pos>pwm0_min:
 			pwm0_pos-=scan_speed
+			pwm.set_pwm(0, 0, pwm0_pos)
+			scan_result += str(ultra.checkdist())
+			scan_result += ' '
+		pwm.set_pwm(0, 0, pwm0_init)
+	else:
+		pwm0_pos = pwm0_min
+		pwm.set_pwm(0, 0, pwm0_pos)
+		time.sleep(0.5)
+		scan_result += str(ultra.checkdist())
+		scan_result += ' '
+		while pwm0_pos<pwm0_max:
+			pwm0_pos+=scan_speed
 			pwm.set_pwm(0, 0, pwm0_pos)
 			scan_result += str(ultra.checkdist())
 			scan_result += ' '
@@ -152,6 +149,7 @@ def up(speed):
 		pwm1_pos += speed
 		pwm1_pos = ctrl_range(pwm1_pos, pwm1_max, pwm1_min)
 		pwm.set_pwm(1, 0, pwm1_pos)
+	#print(pwm1_pos)
 
 
 def down(speed):
@@ -164,6 +162,7 @@ def down(speed):
 		pwm1_pos -= speed
 		pwm1_pos = ctrl_range(pwm1_pos, pwm1_max, pwm1_min)
 		pwm.set_pwm(1, 0, pwm1_pos)
+	#print(pwm1_pos)
 
 def lookup(speed):
 	global pwm2_pos
@@ -227,6 +226,18 @@ def clean_all():
 	pwm = Adafruit_PCA9685.PCA9685()
 	pwm.set_pwm_freq(50)
 	pwm.set_all_pwm(0, 0)
+
+
+def ahead():
+	global pwm0_pos, pwm1_pos
+	pwm.set_pwm(0, 0, pwm0_init)
+	pwm.set_pwm(1, 0, (pwm1_max-20))
+	pwm0_pos = pwm0_init
+	pwm1_pos = pwm1_max-20
+
+
+def get_direction():
+	return (pwm0_pos - pwm0_init)
 
 
 if __name__ == '__main__':

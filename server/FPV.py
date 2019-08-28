@@ -1,10 +1,9 @@
 #!/usr/bin/env/python3
 # File name   : server.py
 # Description : for FPV video and OpenCV functions
-# Website     : www.adeept.com
-# E-mail      : support@adeept.com
+# Website     : www.gewbot.com
 # Author      : William(Based on Adrian Rosebrock's OpenCV code on pyimagesearch.com)
-# Date        : 2019/02/23
+# Date        : 2019/08/28
 
 import time
 import threading
@@ -24,6 +23,7 @@ import LED
 import datetime
 from rpi_ws281x import *
 import move
+import switch
 
 pid = PID.PID()
 pid.SetKp(0.5)
@@ -54,7 +54,7 @@ class FPV:
         global FindColorMode
         FindColorMode = invar
         if not FindColorMode:
-            servo.camera_ang('home',0)
+            servo.ahead()
 
 
     def WatchDog(self,invar):
@@ -120,39 +120,49 @@ class FPV:
                     if Y < (240-tor):
                         error = (240-Y)/5
                         outv = int(round((pid.GenOut(error)),0))
-                        servo.camera_ang('lookup',outv)
+                        servo.up(outv)
                         Y_lock = 0
                     elif Y > (240+tor):
                         error = (Y-240)/5
                         outv = int(round((pid.GenOut(error)),0))
-                        servo.camera_ang('lookdown',outv)
+                        servo.down(outv)
                         Y_lock = 0
                     else:
                         Y_lock = 1
 
                     
                     if X < (320-tor*3):
-                        move.move(70, 'no', 'left', 0.6)
-                        #time.sleep(0.1)
-                        #move.motorStop()
+                        error = (320-X)/5
+                        outv = int(round((pid.GenOut(error)),0))
+                        servo.lookleft(outv)
+                        #move.move(70, 'no', 'left', 0.6)
                         X_lock = 0
                     elif X > (330+tor*3):
-                        move.move(70, 'no', 'right', 0.6)
-                        #time.sleep(0.1)
-                        #move.motorStop()
+                        error = (X-240)/5
+                        outv = int(round((pid.GenOut(error)),0))
+                        servo.lookright(outv)
+                        #move.move(70, 'no', 'right', 0.6)
                         X_lock = 0
                     else:
-                        move.motorStop()
+                        #move.motorStop()
                         X_lock = 1
 
                     if X_lock == 1 and Y_lock == 1:
-                        if UltraData > 0.5:
-                            move.move(70, 'forward', 'no', 0.6)
-                        elif UltraData < 0.4:
-                            move.move(70, 'backward', 'no', 0.6)
-                            print(UltraData)
-                        else:
-                            move.motorStop()
+                        switch.switch(1,1)
+                        switch.switch(2,1)
+                        switch.switch(3,1)
+                    else:
+                        switch.switch(1,0)
+                        switch.switch(2,0)
+                        switch.switch(3,0)
+
+                        # if UltraData > 0.5:
+                        #     move.move(70, 'forward', 'no', 0.6)
+                        # elif UltraData < 0.4:
+                        #     move.move(70, 'backward', 'no', 0.6)
+                        #     print(UltraData)
+                        # else:
+                        #     move.motorStop()
                     
 
                 else:
@@ -203,11 +213,17 @@ class FPV:
                     motionCounter += 1
                     #print(motionCounter)
                     #print(text)
-                    LED.colorWipe(Color(255,16,0))
+                    LED.colorWipe(255,16,0)
                     lastMovtionCaptured = timestamp
+                    switch.switch(1,1)
+                    switch.switch(2,1)
+                    switch.switch(3,1)
 
                 if (timestamp - lastMovtionCaptured).seconds >= 0.5:
-                    LED.colorWipe(Color(255,255,0))
+                    LED.colorWipe(255,255,0)
+                    switch.switch(1,0)
+                    switch.switch(2,0)
+                    switch.switch(3,0)
 
 
             encoded, buffer = cv2.imencode('.jpg', frame_image)

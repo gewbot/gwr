@@ -3,7 +3,6 @@
 # Description : Control Motor
 # Product     : GWR
 # Website     : www.gewbot.com
-# E-mail      : support@adeept.com
 # Author      : William
 # Date        : 2019/07/24
 import time
