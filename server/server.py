@@ -19,11 +19,16 @@ import LED
 import findline
 import switch
 import ultra
+import PID
 from mpu6050 import mpu6050
 
-import PID
-
-sensor = mpu6050(0x68)
+MPU_connection = 1
+try:
+    sensor = mpu6050(0x68)
+    print('mpu6050 connected, PT MODE ON\n检测到已连接姿态传感器，当前为云台模式。')
+except:
+    MPU_connection = 0
+    print('mpu6050 disconnected, ARM MODE ON\n检测到未连接姿态传感器，当前为机械臂模式。')
 
 servo_speed  = 11
 functionMode = 0
@@ -42,7 +47,7 @@ class Servo_ctrl(threading.Thread):
         self.__running.set()      # 将running设置为True
 
     def run(self):
-        global goal_pos, servo_command, init_get
+        global goal_pos, servo_command, init_get, functionMode
         while self.__running.isSet():
             self.__flag.wait()      # 为True时立即返回, 为False时阻塞直到内部的标识位为True后返回
             if functionMode != 6:
@@ -85,30 +90,37 @@ class Servo_ctrl(threading.Thread):
                 if not functionMode:
                     move.motorStop()
             elif functionMode == 6:
-                accelerometer_data = sensor.get_accel_data()
-                Y_get = accelerometer_data['y']
-                if not init_get:
-                    goal_pos = Y_get
-                    init_get = 1
-                if servo_command == 'up':
-                    servo.up(servo_speed)
-                    time.sleep(0.2)
+                if MPU_connection:
                     accelerometer_data = sensor.get_accel_data()
                     Y_get = accelerometer_data['y']
-                    goal_pos = Y_get
-                elif servo_command == 'down':
-                    servo.down(servo_speed)
-                    time.sleep(0.2)
-                    accelerometer_data = sensor.get_accel_data()
-                    Y_get = accelerometer_data['y']
-                    goal_pos = Y_get
-                if abs(Y_get-goal_pos)>tor_pos:
-                    if Y_get < goal_pos:
-                        servo.down(int(mpu_speed*abs(Y_get - goal_pos)))
-                    elif Y_get > goal_pos:
-                        servo.up(int(mpu_speed*abs(Y_get - goal_pos)))
-                    time.sleep(0.03)
-                    continue
+                    if not init_get:
+                        goal_pos = Y_get
+                        init_get = 1
+                    if servo_command == 'up':
+                        servo.up(servo_speed)
+                        time.sleep(0.2)
+                        accelerometer_data = sensor.get_accel_data()
+                        Y_get = accelerometer_data['y']
+                        goal_pos = Y_get
+                    elif servo_command == 'down':
+                        servo.down(servo_speed)
+                        time.sleep(0.2)
+                        accelerometer_data = sensor.get_accel_data()
+                        Y_get = accelerometer_data['y']
+                        goal_pos = Y_get
+                    if abs(Y_get-goal_pos)>tor_pos:
+                        if Y_get < goal_pos:
+                            servo.down(int(mpu_speed*abs(Y_get - goal_pos)))
+                        elif Y_get > goal_pos:
+                            servo.up(int(mpu_speed*abs(Y_get - goal_pos)))
+                        time.sleep(0.03)
+                        continue
+                else:
+                    functionMode = 0
+                    try:
+                        self.pause()
+                    except:
+                        pass
 
             time.sleep(0.07)
 
@@ -257,9 +269,10 @@ def run():
             tcpCliSock.send(('function_5_on').encode())
 
         elif 'function_6_on' in data:
-            functionMode = 6
-            servo_move.resume()
-            tcpCliSock.send(('function_6_on').encode())
+            if MPU_connection:
+                functionMode = 6
+                servo_move.resume()
+                tcpCliSock.send(('function_6_on').encode())
 
 
         #elif 'function_1_off' in data:
@@ -379,6 +392,7 @@ def wifi_check():
 
 
 if __name__ == '__main__':
+    servo.servo_init()
     switch.switchSetup()
     switch.set_all_switch_off()
 
