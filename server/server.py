@@ -5,7 +5,8 @@
 # E-mail      : gewubot@163.com
 # Author      : William
 # Date        : 2019/07/24
-
+import servo
+servo.servo_init()
 import socket
 import time
 import threading
@@ -14,7 +15,7 @@ import Adafruit_PCA9685
 import os
 import FPV
 import info
-import servo
+
 import LED
 import findline
 import switch
