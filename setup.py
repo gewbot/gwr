@@ -103,11 +103,16 @@ for x in range(1,4):
 		break
 
 for x in range(1,4):
-	if os.system("git clone https://github.com/oblique/create_ap") == 0:
+	if os.system("sudo git clone https://github.com/oblique/create_ap") == 0:
 		break
 
 try:
-	os.system("sudo cd //home/pi/adeept_darkpaw/create_ap && sudo make install")
+	os.system("cd //home/pi/gwr/create_ap && sudo make install")
+except:
+	pass
+
+try:
+	os.system("cd //home/pi/create_ap && sudo make install")
 except:
 	pass
 
