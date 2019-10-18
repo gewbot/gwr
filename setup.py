@@ -135,6 +135,10 @@ try:
 except:
 	pass
 
+os.system('sudo chmod 777 //home/pi/startup.sh')
+
+replace_num('/etc/rc.local','fi','fi\n//home/pi/startup.sh start')
+
 print('树莓派中的程序已经安装完毕，已经断开连接并重启。\n你现在可以将树莓派断电来安装摄像头以及驱动板(Robot HAT)。\n再次开机后树莓派会自动运行程序将舵机口信号设置为使舵机转动到中间位置，方便机械组装。')
 print('restarting')
 
