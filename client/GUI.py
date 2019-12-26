@@ -231,6 +231,14 @@ def connection_thread():
 			function_stu = 0
 			Btn_function_6.config(bg=color_btn)
 
+		elif 'CVFL_on' in car_info:
+			function_stu = 1
+			Btn_CVFL.config(bg='#4CAF50')
+
+		elif 'CVFL_off' in car_info:
+			function_stu = 0
+			Btn_CVFL.config(bg='#212121')
+
 
 def Info_receive():
 	global CPU_TEP,CPU_USE,RAM_USE,CAR_DIR
@@ -660,6 +668,60 @@ def new_number2view(x,y,info):
 			can_tex_13=can_scan_1.create_text((27,54),text='%sm'%round((x_range*0.75),2),fill='#aeea00')  #Create a text on canvas
 
 
+def scale_FL(x,y,w):
+	global Btn_CVFL
+	def lip1_send(event):
+		time.sleep(0.03)
+		tcpClicSock.send(('lip1 %s'%var_lip1.get()).encode())
+
+	def lip2_send(event):
+		time.sleep(0.03)
+		tcpClicSock.send(('lip2 %s'%var_lip2.get()).encode())
+
+	def err_send(event):
+		time.sleep(0.03)
+		tcpClicSock.send(('err %s'%var_err.get()).encode())
+
+	def call_Render(event):
+		tcpClicSock.send(('Render').encode())
+
+	def call_CVFL(event):
+		tcpClicSock.send(('CVFL').encode())
+
+	def call_WB(event):
+		tcpClicSock.send(('WBswitch').encode())
+
+	Scale_lip1 = tk.Scale(root,label=None,
+	from_=0,to=480,orient=tk.HORIZONTAL,length=w,
+	showvalue=1,tickinterval=None,resolution=1,variable=var_lip1,troughcolor='#212121',command=lip1_send,fg=color_text,bg=color_bg,highlightthickness=0)
+	Scale_lip1.place(x=x,y=y)							#Define a Scale and put it in position
+
+	Scale_lip2 = tk.Scale(root,label=None,
+	from_=0,to=480,orient=tk.HORIZONTAL,length=w,
+	showvalue=1,tickinterval=None,resolution=1,variable=var_lip2,troughcolor='#212121',command=lip2_send,fg=color_text,bg=color_bg,highlightthickness=0)
+	Scale_lip2.place(x=x,y=y+30)							#Define a Scale and put it in position
+
+	Scale_err = tk.Scale(root,label=None,
+	from_=0,to=200,orient=tk.HORIZONTAL,length=w,
+	showvalue=1,tickinterval=None,resolution=1,variable=var_err,troughcolor='#212121',command=err_send,fg=color_text,bg=color_bg,highlightthickness=0)
+	Scale_err.place(x=x,y=y+60)							#Define a Scale and put it in position
+
+	canvas_cover=tk.Canvas(root,bg=color_bg,height=30,width=510,highlightthickness=0)
+	canvas_cover.place(x=x,y=y+90)
+
+	Btn_Render = tk.Button(root, width=10, text='Render',fg=color_text,bg='#212121',relief='ridge')
+	Btn_Render.place(x=x+w+111,y=y+20)
+	Btn_Render.bind('<ButtonPress-1>', call_Render)
+
+	Btn_CVFL = tk.Button(root, width=10, text='CV FL',fg=color_text,bg='#212121',relief='ridge')
+	Btn_CVFL.place(x=x+w+21,y=y+20)
+	Btn_CVFL.bind('<ButtonPress-1>', call_CVFL)
+
+	Btn_WB = tk.Button(root, width=23, text='LineColorSwitch',fg=color_text,bg='#212121',relief='ridge')
+	Btn_WB.place(x=x+w+21,y=y+60)
+	Btn_WB.bind('<ButtonPress-1>', call_WB)
+
+
 def function_buttons(x,y):
 	global function_stu, Btn_function_1, Btn_function_2, Btn_function_3, Btn_function_4, Btn_function_5, Btn_function_6, Btn_function_7
 	def call_function_1(event):
@@ -730,11 +792,18 @@ def function_buttons(x,y):
 
 
 def loop():
-	global root
+	global root, var_lip1, var_lip2, var_err
 	root = tk.Tk()			
 	root.title('GWR-R GUI')	  
-	root.geometry('495x570')  
+	root.geometry('495x670')  
 	root.config(bg=color_bg)  
+
+	var_lip1 = tk.StringVar()
+	var_lip1.set(440)
+	var_lip2 = tk.StringVar()
+	var_lip2.set(380)
+	var_err = tk.StringVar()
+	var_err.set(20)
 
 	try:
 		logo =tk.PhotoImage(file = 'logo.png')
@@ -758,6 +827,8 @@ def loop():
 	ultrasonic_radar(30,290)
 
 	function_buttons(395,290)
+
+	scale_FL(30,550,238)
 
 	root.mainloop()
 
