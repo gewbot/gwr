@@ -360,6 +360,51 @@ def run():
             except:
                 pass
 
+        elif 'CVFL' in data:
+            if not FPV.FindLineMode:
+                FPV.FindLineMode = 1
+                tcpCliSock.send(('CVFL_on').encode())
+            else:
+                move.motorStop()
+                FPV.FindLineMode = 0
+                tcpCliSock.send(('CVFL_off').encode())
+
+        elif 'Render' in data:
+            if FPV.frameRender:
+                FPV.frameRender = 0
+            else:
+                FPV.frameRender = 1
+
+        elif 'WBswitch' in data:
+            if FPV.lineColorSet == 255:
+                FPV.lineColorSet = 0
+            else:
+                FPV.lineColorSet = 255
+
+        elif 'lip1' in data:
+            try:
+                set_lip1=data.split()
+                lip1_set = int(set_lip1[1])
+                FPV.linePos_1 = lip1_set
+            except:
+                pass
+
+        elif 'lip2' in data:
+            try:
+                set_lip2=data.split()
+                lip2_set = int(set_lip2[1])
+                FPV.linePos_2 = lip2_set
+            except:
+                pass
+
+        elif 'err' in data:
+            try:
+                set_err=data.split()
+                err_set = int(set_err[1])
+                FPV.findLineError = err_set
+            except:
+                pass
+
         else:
             pass
 
@@ -408,7 +453,7 @@ if __name__ == '__main__':
     except:
         print('Use "sudo pip3 install rpi_ws281x" to install WS_281x package')
         pass
-
+        
     while  1:
         wifi_check()
         try:
