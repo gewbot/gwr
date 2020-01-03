@@ -32,7 +32,7 @@ pid.SetKd(0)
 pid.SetKi(0)
 Y_lock = 0
 X_lock = 0
-tor	= 17
+tor	= 31
 FindColorMode = 0
 WatchDogMode  = 0
 UltraData = 3
@@ -45,6 +45,9 @@ linePos_2 = 380
 lineColorSet = 255
 frameRender = 1
 findLineError = 20
+
+colorUpper = np.array([44, 255, 255])
+colorLower = np.array([24, 100, 100])
 
 def findLineCtrl(posInput, setCenter):
 	if posInput:
@@ -151,12 +154,32 @@ class FPV:
 		self.frame_num = 0
 		self.fps = 0
 
-		self.colorUpper = (44, 255, 255)
-		self.colorLower = (24, 100, 100)
-
 
 	def SetIP(self,invar):
 		self.IP = invar
+
+
+	def colorFindSet(self,invarH, invarS, invarV):
+		global colorUpper, colorLower
+		HUE_1 = invarH+11
+		HUE_2 = invarH-11
+		if HUE_1>255:HUE_1=255
+		if HUE_2<0:HUE_2=0
+
+		SAT_1 = invarS+170
+		SAT_2 = invarS-20
+		if SAT_1>255:SAT_1=255
+		if SAT_2<0:SAT_2=0
+
+		VAL_1 = invarV+170
+		VAL_2 = invarV-20
+		if VAL_1>255:VAL_1=255
+		if VAL_2<0:VAL_2=0
+
+		colorUpper = np.array([HUE_1, SAT_1, VAL_1])
+		colorLower = np.array([HUE_2, SAT_2, VAL_2])
+		print('HSV_1:%d %d %d'%(HUE_1, SAT_1, VAL_1))
+		print('HSV_2:%d %d %d'%(HUE_2, SAT_2, VAL_2))
 
 
 	def FindColor(self,invar):
@@ -211,7 +234,7 @@ class FPV:
 			if FindColorMode:
 				####>>>OpenCV Start<<<####
 				hsv = cv2.cvtColor(frame_image, cv2.COLOR_BGR2HSV)
-				mask = cv2.inRange(hsv, self.colorLower, self.colorUpper)
+				mask = cv2.inRange(hsv, colorLower, colorUpper)
 				mask = cv2.erode(mask, None, iterations=2)
 				mask = cv2.dilate(mask, None, iterations=2)
 				cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
@@ -242,13 +265,13 @@ class FPV:
 						Y_lock = 1
 
 					
-					if X < (320-tor*3):
+					if X < (320-tor):
 						error = (320-X)/5
 						outv = int(round((pid.GenOut(error)),0))
 						servo.lookleft(outv)
 						#move.move(70, 'no', 'left', 0.6)
 						X_lock = 0
-					elif X > (330+tor*3):
+					elif X > (330+tor):
 						error = (X-240)/5
 						outv = int(round((pid.GenOut(error)),0))
 						servo.lookright(outv)
@@ -267,24 +290,9 @@ class FPV:
 						switch.switch(2,0)
 						switch.switch(3,0)
 
-						# if UltraData > 0.5:
-						#	 move.move(70, 'forward', 'no', 0.6)
-						# elif UltraData < 0.4:
-						#	 move.move(70, 'backward', 'no', 0.6)
-						#	 print(UltraData)
-						# else:
-						#	 move.motorStop()
-					
-
 				else:
 					cv2.putText(frame_image,'Target Detecting',(40,60), font, 0.5,(255,255,255),1,cv2.LINE_AA)
 					move.motorStop()
-
-				for i in range(1, len(pts)):
-					if pts[i - 1] is None or pts[i] is None:
-						continue
-					thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
-					cv2.line(frame_image, pts[i - 1], pts[i], (0, 0, 255), thickness)
 				####>>>OpenCV Ends<<<####
 				
 

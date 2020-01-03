@@ -405,6 +405,9 @@ def run():
             except:
                 pass
 
+        elif 'FCSET' in data:
+            FCSET = data.split()
+            fpv.colorFindSet(int(FCSET[1]), int(FCSET[2]), int(FCSET[3]))
         else:
             pass
 
@@ -477,7 +480,7 @@ if __name__ == '__main__':
             LED.colorWipe(0,80,255)
         except:
             pass
-        run()
+    run()
     try:
         run()
     except:
