@@ -97,7 +97,7 @@ def getposBgr(event, x, y, flags, param):
 		var_B.set(getBGR[0])
 		# tcpClicSock.send(('FCSET %s'%rgb2hsv(int(var_R.get()), int(var_G.get()), int(var_B.get()))).encode())
 		canvas_show.config(bg = RGB_to_Hex(int(var_R.get()), int(var_G.get()), int(var_B.get())))
-		print("BGR is", getBGR)
+		print("Bgr is", getBGR)
 		print("HSV is", HSVimg[y, x])
 		tcpClicSock.send(('FCSET %s %s %s'%(HSVimg[y, x][0], HSVimg[y, x][1], HSVimg[y, x][2])).encode())
 		# print("HSV genOut is", rgb2hsv(int(var_R.get()), int(var_G.get()), int(var_B.get())))
@@ -825,6 +825,29 @@ def scale_FC(x,y,w):
 	Btn_WB.bind('<ButtonPress-1>', call_SET)
 
 
+def scale_ExpCom(x,y,w):#Z
+	def EC_send(event):
+		tcpClicSock.send(('setEC %s'%var_ec.get()).encode())
+		time.sleep(0.03)
+
+	def EC_default(event):
+		var_ec.set(0)
+		tcpClicSock.send(('defEC').encode())
+
+
+	Scale_ExpCom = tk.Scale(root,label='Exposure Compensation Level',
+	from_=-25,to=25,orient=tk.HORIZONTAL,length=w,
+	showvalue=1,tickinterval=None,resolution=1,variable=var_ec,troughcolor='#212121',command=EC_send,fg=color_text,bg=color_bg,highlightthickness=0)
+	Scale_ExpCom.place(x=x,y=y)							#Define a Scale and put it in position
+
+	canvas_cover=tk.Canvas(root,bg=color_bg,height=30,width=510,highlightthickness=0)
+	canvas_cover.place(x=x,y=y+50)
+
+	Btn_dEC = tk.Button(root, width=23,height=2, text='Set Default Exposure\nCompensation Level',fg=color_text,bg='#212121',relief='ridge')
+	Btn_dEC.place(x=x+w+21,y=y+3)
+	Btn_dEC.bind('<ButtonPress-1>', EC_default)
+
+
 def function_buttons(x,y):
 	global function_stu, Btn_function_1, Btn_function_2, Btn_function_3, Btn_function_4, Btn_function_5, Btn_function_6, Btn_function_7
 	def call_function_1(event):
@@ -895,10 +918,10 @@ def function_buttons(x,y):
 
 
 def loop():
-	global root, var_lip1, var_lip2, var_err, var_R, var_G, var_B
+	global root, var_lip1, var_lip2, var_err, var_R, var_G, var_B, var_ec
 	root = tk.Tk()			
 	root.title('GWR-R GUI')	  
-	root.geometry('495x770')  
+	root.geometry('495x850')  
 	root.config(bg=color_bg)  
 
 	var_lip1 = tk.StringVar()
@@ -914,6 +937,9 @@ def loop():
 	var_G.set(80)
 	var_B = tk.StringVar()
 	var_B.set(80)
+
+	var_ec = tk.StringVar() #Z
+	var_ec.set(0)			#Z
 
 	try:
 		logo =tk.PhotoImage(file = 'logo.png')
@@ -941,6 +967,8 @@ def loop():
 	scale_FL(30,550,238)
 
 	scale_FC(30,650,238)
+
+	scale_ExpCom(30,770,238) #Z
 
 	root.mainloop()
 
