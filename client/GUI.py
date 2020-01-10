@@ -21,6 +21,9 @@ try:
 except:
 	print("Couldn't import OpenCV, you need to install it first.")
 
+OSD_X = 0#1
+OSD_Y = 0
+advanced_OSD = 0
 
 def global_init():
 	global DS_stu, TS_stu, color_bg, color_text, color_btn, color_line, color_can, color_oval, target_color
@@ -97,7 +100,7 @@ def getposBgr(event, x, y, flags, param):
 		var_B.set(getBGR[0])
 		# tcpClicSock.send(('FCSET %s'%rgb2hsv(int(var_R.get()), int(var_G.get()), int(var_B.get()))).encode())
 		canvas_show.config(bg = RGB_to_Hex(int(var_R.get()), int(var_G.get()), int(var_B.get())))
-		print("Bgr is", getBGR)
+		print("BGR is", getBGR)
 		print("HSV is", HSVimg[y, x])
 		tcpClicSock.send(('FCSET %s %s %s'%(HSVimg[y, x][0], HSVimg[y, x][1], HSVimg[y, x][2])).encode())
 		# print("HSV genOut is", rgb2hsv(int(var_R.get()), int(var_G.get()), int(var_B.get())))
@@ -123,6 +126,42 @@ def get_FPS():
 			frame_num = 0
 		except:
 			time.sleep(1)
+
+
+def advanced_OSD_add(draw_on, X, Y):#1
+	error_X = X*10
+	error_Y = Y*6-2
+	#if error_Y > 0:
+	X_s = int(200+120-120*math.cos(math.radians(error_Y)))
+	Y_s = int(240+120*math.sin(math.radians(error_Y))-error_X*3)
+
+	X_e = int(320+120*math.cos(math.radians(error_Y)))
+	Y_e = int(240-120*math.sin(math.radians(error_Y))-error_X*3)
+	cv2.line(draw_on,(X_s,Y_s),(X_e,Y_e),(0,255,0),2)
+	cv2.putText(draw_on,('horizontal line'),(X_e+10,Y_e), font, 0.5,(0,255,0),1,cv2.LINE_AA)
+
+	cv2.line(draw_on,(X_s,Y_s+270),(X_e,Y_e+270),(0,255,0),2)
+	cv2.putText(draw_on,('Down'),(X_e+10,Y_e+270), font, 0.5,(0,255,0),1,cv2.LINE_AA)
+
+	cv2.line(draw_on,(X_s,Y_s-270),(X_e,Y_e-270),(0,255,0),2)
+	cv2.putText(draw_on,('Up'),(X_e+10,Y_e-270), font, 0.5,(0,255,0),1,cv2.LINE_AA)
+
+	X_s_short = int(260+60-60*math.cos(math.radians(error_Y)))
+	Y_s_short = int(240+60*math.sin(math.radians(error_Y))-error_X*3)
+
+	X_e_short = int(320+60*math.cos(math.radians(error_Y)))
+	Y_e_short = int(240-60*math.sin(math.radians(error_Y))-error_X*3)
+
+	cv2.line(draw_on,(X_s_short,Y_s_short+90),(X_e_short,Y_e_short+90),(0,255,0))
+	cv2.line(draw_on,(X_s_short,Y_s_short+180),(X_e_short,Y_e_short+180),(0,255,0))
+	cv2.line(draw_on,(X_s_short,Y_s_short+360),(X_e_short,Y_e_short+360),(0,255,0))
+	cv2.line(draw_on,(X_s_short,Y_s_short+450),(X_e_short,Y_e_short+450),(0,255,0))
+
+	cv2.line(draw_on,(X_s_short,Y_s_short-90),(X_e_short,Y_e_short-90),(0,255,0))
+	cv2.line(draw_on,(X_s_short,Y_s_short-180),(X_e_short,Y_e_short-180),(0,255,0))
+	cv2.line(draw_on,(X_s_short,Y_s_short-360),(X_e_short,Y_e_short-360),(0,255,0))
+	cv2.line(draw_on,(X_s_short,Y_s_short-450),(X_e_short,Y_e_short-450),(0,255,0))
+
 
 def opencv_r():
 	global frame_num, source, HSVimg
@@ -155,6 +194,9 @@ def opencv_r():
 				#cv2.putText(source,('%sm'%ultra_data),(210,290), font, 0.5,(255,255,255),1,cv2.LINE_AA)
 			except:
 				pass
+
+			if advanced_OSD:#1
+				advanced_OSD_add(source, OSD_X, OSD_Y)
 			
 			#cv2.putText(source,('%sm'%ultra_data),(210,290), font, 0.5,(255,255,255),1,cv2.LINE_AA)
 			cv2.imshow("Stream", source)
@@ -206,7 +248,7 @@ def num_import(initial):			#Call this function to import data from '.txt' file
 
 
 def connection_thread():
-	global Switch_3, Switch_2, Switch_1, function_stu
+	global Switch_3, Switch_2, Switch_1, function_stu, OSD_X, OSD_Y, OSD_info, advanced_OSD
 	while 1:
 		car_info = (tcpClicSock.recv(BUFSIZ)).decode()
 		if not car_info:
@@ -255,6 +297,7 @@ def connection_thread():
 		elif 'function_4_on' in car_info:
 			function_stu = 1
 			Btn_function_4.config(bg='#4CAF50')
+			advanced_OSD = 1
 
 		elif 'function_5_on' in car_info:
 			function_stu = 1
@@ -263,6 +306,7 @@ def connection_thread():
 		elif 'function_6_on' in car_info:
 			function_stu = 1
 			Btn_function_6.config(bg='#4CAF50')
+			# advanced_OSD = 1	#bug happend
 
 		elif 'function_1_off' in car_info:
 			function_stu = 0
@@ -279,6 +323,7 @@ def connection_thread():
 		elif 'function_4_off' in car_info:
 			function_stu = 0
 			Btn_function_4.config(bg=color_btn)
+			advanced_OSD = 0
 
 		elif 'function_5_off' in car_info:
 			function_stu = 0
@@ -287,6 +332,7 @@ def connection_thread():
 		elif 'function_6_off' in car_info:
 			function_stu = 0
 			Btn_function_6.config(bg=color_btn)
+			# advanced_OSD = 0	#bug
 
 		elif 'CVFL_on' in car_info:
 			function_stu = 1
@@ -295,6 +341,14 @@ def connection_thread():
 		elif 'CVFL_off' in car_info:
 			function_stu = 0
 			Btn_CVFL.config(bg='#212121')
+
+		elif 'OSD' in car_info:
+			OSD_info = car_info.split()
+			try:
+				OSD_X = float(OSD_info[1])
+				OSD_Y = float(OSD_info[2])
+			except:
+				pass
 
 
 def Info_receive():
@@ -825,6 +879,29 @@ def scale_FC(x,y,w):
 	Btn_WB.bind('<ButtonPress-1>', call_SET)
 
 
+def scale_ExpCom(x,y,w):#Z
+	def EC_send(event):
+		tcpClicSock.send(('setEC %s'%var_ec.get()).encode())
+		time.sleep(0.03)
+
+	def EC_default(event):
+		var_ec.set(0)
+		tcpClicSock.send(('defEC').encode())
+
+
+	Scale_ExpCom = tk.Scale(root,label='Exposure Compensation Level',
+	from_=-25,to=25,orient=tk.HORIZONTAL,length=w,
+	showvalue=1,tickinterval=None,resolution=1,variable=var_ec,troughcolor='#212121',command=EC_send,fg=color_text,bg=color_bg,highlightthickness=0)
+	Scale_ExpCom.place(x=x,y=y)							#Define a Scale and put it in position
+
+	canvas_cover=tk.Canvas(root,bg=color_bg,height=30,width=510,highlightthickness=0)
+	canvas_cover.place(x=x,y=y+50)
+
+	Btn_dEC = tk.Button(root, width=23,height=2, text='Set Default Exposure\nCompensation Level',fg=color_text,bg='#212121',relief='ridge')
+	Btn_dEC.place(x=x+w+21,y=y+3)
+	Btn_dEC.bind('<ButtonPress-1>', EC_default)
+
+
 def function_buttons(x,y):
 	global function_stu, Btn_function_1, Btn_function_2, Btn_function_3, Btn_function_4, Btn_function_5, Btn_function_6, Btn_function_7
 	def call_function_1(event):
@@ -872,7 +949,7 @@ def function_buttons(x,y):
 	Btn_function_1 = tk.Button(root, width=8, text='RadarScan',fg=color_text,bg=color_btn,relief='ridge')
 	Btn_function_2 = tk.Button(root, width=8, text='FindColor',fg=color_text,bg=color_btn,relief='ridge')
 	Btn_function_3 = tk.Button(root, width=8, text='MotionGet',fg=color_text,bg=color_btn,relief='ridge')
-	Btn_function_4 = tk.Button(root, width=8, text='LineTrack',fg=color_text,bg=color_btn,relief='ridge')
+	Btn_function_4 = tk.Button(root, width=8, text='OSDscreen',fg=color_text,bg=color_btn,relief='ridge')
 	Btn_function_5 = tk.Button(root, width=8, text='Automatic',fg=color_text,bg=color_btn,relief='ridge')
 	Btn_function_6 = tk.Button(root, width=8, text='SteadyCam',fg=color_text,bg=color_btn,relief='ridge')
 	Btn_function_7 = tk.Button(root, width=8, text='Instruction',fg=color_text,bg=color_btn,relief='ridge')
@@ -895,10 +972,10 @@ def function_buttons(x,y):
 
 
 def loop():
-	global root, var_lip1, var_lip2, var_err, var_R, var_G, var_B
+	global root, var_lip1, var_lip2, var_err, var_R, var_G, var_B, var_ec#Z
 	root = tk.Tk()			
-	root.title('GWR-R GUI')	  
-	root.geometry('495x770')  
+	root.title('GTank GUI')	  
+	root.geometry('495x860')  #Z
 	root.config(bg=color_bg)  
 
 	var_lip1 = tk.StringVar()
@@ -914,6 +991,9 @@ def loop():
 	var_G.set(80)
 	var_B = tk.StringVar()
 	var_B.set(80)
+
+	var_ec = tk.StringVar() #Z
+	var_ec.set(0)			#Z
 
 	try:
 		logo =tk.PhotoImage(file = 'logo.png')
@@ -941,6 +1021,8 @@ def loop():
 	scale_FL(30,550,238)
 
 	scale_FC(30,650,238)
+
+	scale_ExpCom(30,770,238) #Z
 
 	root.mainloop()
 
