@@ -199,8 +199,21 @@ class FPV:
 		UltraData = invar
 
 
+	def setExpCom(self,invar):#Z
+		if invar > 25:
+			invar = 25
+		elif invar < -25:
+			invar = -25
+		else:
+			camera.exposure_compensation = invar
+
+
+	def defaultExpCom(self):#Z
+		camera.exposure_compensation = 0
+
+
 	def capture_thread(self,IPinver):
-		global frame_image
+		global frame_image, camera#Z
 		ap = argparse.ArgumentParser()			#OpenCV initialization
 		ap.add_argument("-b", "--buffer", type=int, default=64,
 			help="max buffer size")
