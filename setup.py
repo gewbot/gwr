@@ -1,12 +1,13 @@
 #!/usr/bin/python3
 # File name   : setup.py
-# Website     : www.gewbot.com
-# E-mail      : gewubot@163.com
-# Author      : William
-# Date        : 2019/09/02
+# Author      : Adeept
+# Date        : 2020/3/14
 
 import os
 import time
+
+curpath = os.path.realpath(__file__)
+thisPath = "/" + os.path.dirname(curpath)
 
 def replace_num(file,initial,new_num):  
     newline=""
@@ -75,7 +76,11 @@ for x in range(1,4):
 		break
 
 for x in range(1,4):
-	if os.system("sudo apt-get install -y libopencv-dev python3-opencv") == 0:
+	if os.system("pip3 install opencv-contrib-python==3.4.3.18") == 0:
+		break
+
+for x in range(1,4):
+	if os.system("sudo apt-get -y install libqtgui4 libhdf5-dev libhdf5-serial-dev libatlas-base-dev libjasper-dev libqt4-test") == 0:
 		break
 
 for x in range(1,4):
@@ -87,7 +92,7 @@ for x in range(1,4):
 		break
 
 try:
-	os.system("cd //home/pi/gtank/create_ap && sudo make install")
+	os.system("cd " + thisPath + "/create_ap && sudo make install")
 except:
 	pass
 
@@ -96,27 +101,14 @@ try:
 except:
 	pass
 
-try:
-	os.system("sudo cd //home/pi/create_ap && sudo make install")
-except:
-	pass
-
 for x in range(1,4):
 	if os.system("sudo apt-get install -y util-linux procps hostapd iproute2 iw haveged dnsmasq") == 0:
 		break
-'''
-try:
-	os.system('sudo mkdir //home/pi/.config/autostart')
-	os.system('sudo touch //home/pi/.config/autostart/car.desktop')
-	with open("//home/pi/.config/autostart/car.desktop",'w') as file_to_write:
-		file_to_write.write("[Desktop Entry]\n   Name=Car\n   Comment=Car\n   Exec=sudo python3 //home/pi/gtank/server/server.py\n   Icon=false\n   Terminal=false\n   MutipleArgs=false\n   Type=Application\n   Catagories=Application;Development;\n   StartupNotify=true")
-except:
-	pass
-'''
+
 try:
 	os.system('sudo touch //home/pi/startup.sh')
 	with open("//home/pi/startup.sh",'w') as file_to_write:
-		file_to_write.write("#!/bin/sh\nsudo python3 //home/pi/gtank/server/server.py")
+		file_to_write.write("#!/bin/sh\nsudo python3 " + thisPath + "/server/server.py")
 except:
 	pass
 
@@ -131,6 +123,6 @@ try: #fix conflict with onboard Raspberry Pi audio
 except:
 	pass
 
-print('树莓派中的程序已经安装完毕，已经断开连接并重启。\n你现在可以将树莓派断电来安装摄像头以及驱动板(Robot HAT)。\n再次开机后树莓派会自动运行程序将舵机口信号设置为使舵机转动到中间位置，方便机械组装。')
-
+print('The program in Raspberry Pi has been installed, disconnected and restarted. \nYou can now power off the Raspberry Pi to install the camera and driver board (Robot HAT). \nAfter turning on again, the Raspberry Pi will automatically run the program to set the servos port signal to turn the servos to the middle position, which is convenient for mechanical assembly.')
+print('restarting...')
 os.system("sudo reboot")
